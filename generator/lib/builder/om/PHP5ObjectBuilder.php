@@ -4126,8 +4126,7 @@ abstract class ".$this->getClassname()." extends ".$parentClass." ";
 	protected function doSave(PropelPDO \$con".($reloadOnUpdate || $reloadOnInsert ? ", \$skipReload = false" : "").")
 	{
 		\$affectedRows = 0; // initialize var to track total num of affected rows
-		if (!\$this->alreadyInSave) {
-			\$this->alreadyInSave = true;
+
 ";
 		if ($reloadOnInsert || $reloadOnUpdate) {
 			$script .= "
@@ -4244,7 +4243,6 @@ abstract class ".$this->getClassname()." extends ".$parentClass." ";
 ";
 		}
 		$script .= "
-		}
 		return \$affectedRows;
 	} // doSave()
 ";
@@ -4606,6 +4604,9 @@ abstract class ".$this->getClassname()." extends ".$parentClass." ";
 		$reloadOnInsert = $table->isReloadOnInsert();
 
 		$script .= "
+		if (!\$this->alreadyInSave) {
+			\$this->alreadyInSave = true;
+
 		if (\$this->isDeleted()) {
 			throw new PropelException(\"You cannot save an object that has been deleted.\");
 		}
@@ -4701,6 +4702,7 @@ abstract class ".$this->getClassname()." extends ".$parentClass." ";
 		} catch (Exception \$e) {
 			\$con->rollBack();
 			throw \$e;
+		}
 		}";
 	}
 
