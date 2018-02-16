@@ -1,6 +1,7 @@
-test/fixtures/bookstore-packaged/build/
-test/fixtures/bookstore/build/
-test/fixtures/namespaced/build/
-test/fixtures/nestedset/build/
-test/fixtures/schemas/build/
-test/fixtures/treetest/build/
+build.properties
+build/
+buildtime-conf.xml
+composer.lock
+runtime-conf.xml
+schema.xml
+vendor/
