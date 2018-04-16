@@ -4232,9 +4232,6 @@ abstract class ".$this->getClassname()." extends ".$parentClass." ";
 
 	} /* foreach getReferrers() */
 
-	$script .= "
-		\$this->alreadyInSave = false;
-";
 	if ($reloadOnInsert || $reloadOnUpdate) {
 		$script .= "
 		if (\$reloadObject) {
@@ -4608,6 +4605,9 @@ abstract class ".$this->getClassname()." extends ".$parentClass." ";
 			\$this->alreadyInSave = true;
 
 			if (\$this->isDeleted()) {
+
+			\$this->alreadyInSave = false;
+
 				throw new PropelException(\"You cannot save an object that has been deleted.\");
 			}
 
@@ -4700,10 +4700,13 @@ abstract class ".$this->getClassname()." extends ".$parentClass." ";
 
 			$script .= "
 			} catch (Exception \$e) {
+				\$this->alreadyInSave = false;
 				\$con->rollBack();
 				throw \$e;
 			}
-		}";
+		}
+		\$this->alreadyInSave = false;
+		";
 	}
 
 	/**
