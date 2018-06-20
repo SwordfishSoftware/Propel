@@ -55,7 +55,7 @@ class PropelDateTime extends DateTime
 			return null;
 		}
 		try {
-			if (self::isTimestamp($value)) { // if it's a unix timestamp
+			if (is_numeric($value)) { // if it's a unix timestamp
 				$dateTimeObject = new $dateTimeClass('@' . $value, new DateTimeZone('UTC'));
 				// timezone must be explicitly specified and then changed
 				// because of a DateTime bug: http://bugs.php.net/bug.php?id=43003
@@ -72,25 +72,6 @@ class PropelDateTime extends DateTime
 			throw new PropelException('Error parsing date/time value: ' . var_export($value, true), $e);
 		}
 		return $dateTimeObject;
-	}
-
-	public static function isTimestamp($value)
-	{
-		if (!is_numeric($value)) {
-			return false;
-		}
-
-		$stamp = strtotime($value);
-
-		if (false === $stamp) {
-			return true;
-		}
-
-		$month = date('m', $value);
-		$day   = date('d', $value);
-		$year  = date('Y', $value);
-
-		return checkdate($month, $day, $year);
 	}
 
 	/**

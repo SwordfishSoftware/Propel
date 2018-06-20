@@ -286,7 +286,15 @@ class BasePeer
 
 			$stmt = $con->prepare($sql);
 			$db->bindValues($stmt, $params, $dbMap, $db);
+
+            try {
 			$stmt->execute();
+            } catch (Exception $exception) {
+                if (function_exists('captureDeadlockQuery')) {
+                    captureDeadlockQuery($stmt->queryString, json_encode($params), $exception->getMessage(), $exception->getTraceAsString());
+                }
+                throw new Exception ('Could not execute query');
+            }
 
 		} catch (Exception $e) {
 			Propel::log($e->getMessage(), Propel::LOG_ERR);
@@ -432,7 +440,14 @@ class BasePeer
 				// Replace ':p?' with the actual values
 				$db->bindValues($stmt, $params, $dbMap, $db);
 
+                try {
 				$stmt->execute();
+                } catch (Exception $exception) {
+                    if (function_exists('captureDeadlockQuery')) { 
+                        captureDeadlockQuery($stmt->queryString, json_encode($params), $exception->getMessage(), $exception->getTraceAsString());
+                    }
+                    throw new Exception ('Could not execute query');
+                }
 
 				$affectedRows = $stmt->rowCount();
 
