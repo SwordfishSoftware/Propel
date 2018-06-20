@@ -4,3 +4,6 @@ test/fixtures/namespaced/build/
 test/fixtures/nestedset/build/
 test/fixtures/schemas/build/
 test/fixtures/treetest/build/
+.idea/
+vendor/
+
