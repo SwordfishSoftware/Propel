@@ -292,7 +292,15 @@ class BasePeer
 
             $stmt = $con->prepare($sql);
             $db->bindValues($stmt, $params, $dbMap, $db);
-            $stmt->execute();
+            try {
+                $stmt->execute();
+            } catch (Exception $exception) {
+                if (function_exists('captureDeadlockQuery')) {
+                    captureDeadlockQuery($stmt->queryString, json_encode($params), $exception->getMessage(), $exception->getTraceAsString());
+                }
+                throw new Exception ('Could notexecutequery');
+            }
+
         } catch (Exception $e) {
             Propel::log($e->getMessage(), Propel::LOG_ERR);
             throw new PropelException(sprintf('Unable to execute INSERT statement [%s]', $sql), $e);
@@ -436,7 +444,14 @@ class BasePeer
                 // Replace ':p?' with the actual values
                 $db->bindValues($stmt, $params, $dbMap, $db);
 
-                $stmt->execute();
+                try {
+                    $stmt->execute();
+                } catch (Exception $exception) {
+                    if (function_exists('captureDeadlockQuery')) {
+                        captureDeadlockQuery($stmt->queryString, json_encode($params), $exception->getMessage(), $exception->getTraceAsString());
+                    }
+                    throw new Exception ('Could notexecutequery');
+                }
 
                 $affectedRows = $stmt->rowCount();
 
