@@ -57,7 +57,7 @@ class PropelDateTime extends DateTime
             return null;
         }
         try {
-            if (self::isTimestamp($value)) { // if it's a unix timestamp
+            if (is_numeric($value)) { // if it's a unix timestamp
                 $dateTimeObject = new $dateTimeClass('@' . $value, new DateTimeZone('UTC'));
                 // timezone must be explicitly specified and then changed
                 // because of a DateTime bug: http://bugs.php.net/bug.php?id=43003
