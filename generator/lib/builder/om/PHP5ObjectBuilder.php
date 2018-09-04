@@ -163,6 +163,15 @@ class PHP5ObjectBuilder extends ObjectBuilder
         } elseif ($col->isPhpPrimitiveType()) {
             settype($val, $col->getPhpType());
             $defaultValue = var_export($val, true);
+            /*
+             * Workaround for changes in var_export functioning in php 7.x when generating for 5.x
+             * If the default string is "0" but the type is double, then the output would be 0.0
+             * FIXME: Might have to revert this back to original state when using the result in 7.x
+             */
+            if ($defaultValue !== $val && $col->getPhpType() == 'double') {
+                settype($val, "int");
+                $defaultValue = var_export($val, true);
+            }
         } elseif ($col->isPhpObjectType()) {
             $defaultValue = 'new '.$col->getPhpType().'(' . var_export($val, true) . ')';
         } elseif ($col->isPhpArrayType()) {
