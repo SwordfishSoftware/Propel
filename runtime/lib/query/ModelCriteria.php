@@ -1432,20 +1432,27 @@ class ModelCriteria extends Criteria
 			|| in_array(Criteria::DISTINCT, $this->getSelectModifiers());
 
 		$params = array();
-		if ($needsComplexCount) {
-			if (BasePeer::needsSelectAliases($this)) {
-				if ($this->getHaving()) {
-					throw new PropelException('Propel cannot create a COUNT query when using HAVING and  duplicate column names in the SELECT part');
-				}
-				$db->turnSelectColumnsToAliases($this);
-			}
-			$selectSql = BasePeer::createSelectSql($this, $params);
-			$sql = 'SELECT COUNT(*) FROM (' . $selectSql . ') propelmatch4cnt';
-		} else {
-			// Replace SELECT columns with COUNT(*)
-			$this->clearSelectColumns()->addSelectColumn('COUNT(*)');
-			$sql = BasePeer::createSelectSql($this, $params);
-		}
+        if ($needsComplexCount) {
+            if (BasePeer::needsSelectAliases($this)) {
+                if ($this->getHaving()) {
+                    throw new PropelException('Propel cannot create a COUNT query when using HAVING and  duplicate column names in the SELECT part');
+                }
+                $db->turnSelectColumnsToAliases($this);
+            }
+            $selectSql = BasePeer::createSelectSql($this, $params);
+            $sql = 'SELECT COUNT(*) FROM (' . $selectSql . ') propelmatch4cnt';
+        } else {
+            //check if the columns were specified
+            if(isset($this->KeepColumns)){
+                $columns_to_keep = $this->KeepColumns;
+                $this->clearSelectColumns()->addSelectColumn('COUNT(' . $columns_to_keep . ')');
+            } else {
+                // Replace SELECT columns with COUNT(*)
+                $this->clearSelectColumns()->addSelectColumn('COUNT(*)');
+            }
+            
+            $sql = BasePeer::createSelectSql($this, $params);
+        }
 		try {
 			$stmt = $con->prepare($sql);
 			$db->bindValues($stmt, $params, $dbMap);

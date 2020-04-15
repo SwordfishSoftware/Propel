@@ -429,13 +429,7 @@ abstract class DBAdapter
 				$selectClause[] = $columnName; // the full column name: e.g. MAX(books.price)
                 
                 if(isset($criteria->KeepColumns)){
-                    $match = false;
-                    foreach ($criteria->KeepColumns as $column_to_keep){
-                        if($columnName == $column_to_keep){
-                            $match = true;
-                        }
-                    }
-                    if(!$match){
+                    if($columnName != $criteria->KeepColumns){
                         break;
                     }
                 }
