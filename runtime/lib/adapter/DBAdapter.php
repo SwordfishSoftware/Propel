@@ -427,6 +427,18 @@ abstract class DBAdapter
 				$tableName = null;
 
 				$selectClause[] = $columnName; // the full column name: e.g. MAX(books.price)
+                
+                if(isset($criteria->KeepColumns)){
+                    $match = false;
+                    foreach ($criteria->KeepColumns as $column_to_keep){
+                        if($columnName == $column_to_keep){
+                            $match = true;
+                        }
+                    }
+                    if(!$match){
+                        break;
+                    }
+                }
 
 				$parenPos = strrpos($columnName, '(');
 				$dotPos = strrpos($columnName, '.', ($parenPos !== false ? $parenPos : 0));
