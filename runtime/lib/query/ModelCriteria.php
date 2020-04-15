@@ -1443,9 +1443,8 @@ class ModelCriteria extends Criteria
             $sql = 'SELECT COUNT(*) FROM (' . $selectSql . ') propelmatch4cnt';
         } else {
             //check if the columns were specified
-            if(isset($this->KeepColumns)){
-                $columns_to_keep = $this->KeepColumns;
-                $this->clearSelectColumns()->addSelectColumn('COUNT(' . $columns_to_keep . ')');
+            if(isset($this->CountOnColumn)){
+                $this->clearSelectColumns()->addSelectColumn('COUNT(' . $this->CountOnColumn . ')');
             } else {
                 // Replace SELECT columns with COUNT(*)
                 $this->clearSelectColumns()->addSelectColumn('COUNT(*)');

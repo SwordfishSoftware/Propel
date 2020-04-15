@@ -428,8 +428,8 @@ abstract class DBAdapter
 
 				$selectClause[] = $columnName; // the full column name: e.g. MAX(books.price)
                 
-                if(isset($criteria->KeepColumns)){
-                    if($columnName != $criteria->KeepColumns){
+                if(isset($criteria->CountOnColumn)){
+                    if($columnName != $criteria->CountOnColumn){
                         break;
                     }
                 }
