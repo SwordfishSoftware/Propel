@@ -28,24 +28,24 @@ require_once dirname(__FILE__) . '/../../../../../generator/lib/task/PropelConve
  */
 class MysqlSchemaParserTest extends PHPUnit_Framework_TestCase
 {
-	protected function setUp()
-	{
-		parent::setUp();
+    protected function setUp()
+    {
+        parent::setUp();
 
-		$xmlDom = new DOMDocument();
-		$xmlDom->load(dirname(__FILE__) . '/../../../../fixtures/reverse/mysql/runtime-conf.xml');
-		$xml = simplexml_load_string($xmlDom->saveXML());
-		$phpconf = OpenedPropelConvertConfTask::simpleXmlToArray($xml);
+        $xmlDom = new DOMDocument();
+        $xmlDom->load(dirname(__FILE__) . '/../../../../fixtures/reverse/mysql/runtime-conf.xml');
+        $xml = simplexml_load_string($xmlDom->saveXML());
+        $phpconf = OpenedPropelConvertConfTask::simpleXmlToArray($xml);
 
-		Propel::setConfiguration($phpconf);
+        Propel::setConfiguration($phpconf);
         Propel::initialize();
-	}
+    }
 
-	protected function tearDown()
-	{
-		parent::tearDown();
-		Propel::init(dirname(__FILE__) . '/../../../../fixtures/bookstore/build/conf/bookstore-conf.php');
-	}
+    protected function tearDown()
+    {
+        parent::tearDown();
+        Propel::init(dirname(__FILE__) . '/../../../../fixtures/bookstore/build/conf/bookstore-conf.php');
+    }
 
     public function testParse()
     {
@@ -55,21 +55,68 @@ class MysqlSchemaParserTest extends PHPUnit_Framework_TestCase
         $database = new Database();
         $database->setPlatform(new DefaultPlatform());
 
-        $this->assertEquals(1, $parser->parse($database), 'One table and one view defined should return one as we exclude views');
+        $this->assertEquals(2, $parser->parse($database), 'two tables and one view defined should return two as we exclude views');
 
-		$tables = $database->getTables();
-		$this->assertEquals(1, count($tables));
+        $tables = $database->getTables();
+        $this->assertEquals(2, count($tables));
 
-		$table = $tables[0];
-		$this->assertEquals('Book', $table->getPhpName());
-		$this->assertEquals(4, count($table->getColumns()));
+        $table = $tables[0];
+        $this->assertEquals('Book', $table->getPhpName());
+        $this->assertEquals(4, count($table->getColumns()));
+    }
+
+    public function testDecimal()
+    {
+        $t1 = new Table('foo');
+
+        $schema = '<database name="reverse_bookstore"><table name="foo"><column name="longitude" type="DECIMAL" scale="7" size="10" /></table></database>';
+        $xtad = new XmlToAppData();
+        $appData = $xtad->parseString($schema);
+        $database = $appData->getDatabase();
+        $table = $database->getTable('foo');
+        $c1 = $table->getColumn('longitude');
+
+        $parser = new MysqlSchemaParser(Propel::getConnection('reverse-bookstore'));
+        $parser->setGeneratorConfig(new QuickGeneratorConfig());
+
+        $database = new Database();
+        $database->setPlatform(new MysqlPlatform());
+        $parser->parse($database);
+
+        $table = $database->getTable('foo');
+
+        $c2 = $table->getColumn('longitude');
+        $this->assertEquals($c1->getSize(), $c2->getSize());
+        $this->assertEquals($c1->getScale(), $c2->getScale());
+    }
+
+    public function testDescColumn()
+    {
+        $schema = '<database name="reverse_bookstore"><table name="book"><column name="title" type="VARCHAR" size="255" description="Book Title with accent éài" /></table></database>';
+        $xtad = new XmlToAppData();
+        $appData = $xtad->parseString($schema);
+        $database = $appData->getDatabase();
+        $table = $database->getTable('book');
+        $c1 = $table->getColumn('title');
+
+        $parser = new MysqlSchemaParser(Propel::getConnection('reverse-bookstore'));
+        $parser->setGeneratorConfig(new QuickGeneratorConfig());
+
+        $database = new Database();
+        $database->setPlatform(new DefaultPlatform());
+        $parser->parse($database);
+
+        $c2 = $database->getTable('book')->getColumn('title');
+
+        $this->assertEquals($c1->getDescription(), $c2->getDescription());
+
     }
 }
 
 class OpenedPropelConvertConfTask extends PropelConvertConfTask
 {
-	public static function simpleXmlToArray($xml)
-	{
-		return parent::simpleXmlToArray($xml);
-	}
+    public static function simpleXmlToArray($xml)
+    {
+        return parent::simpleXmlToArray($xml);
+    }
 }

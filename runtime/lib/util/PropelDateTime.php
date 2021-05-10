@@ -12,7 +12,7 @@
  * DateTime subclass which supports serialization.
  *
  * Currently Propel is not using this for storing date/time objects
- * within model objeects; however, we are keeping it in the repository
+ * within model objects; however, we are keeping it in the repository
  * because it is useful if you want to store a DateTime object in a session.
  *
  * @author     Alan Pinstein
@@ -43,6 +43,8 @@ class PropelDateTime extends DateTime
 	 * @param string $dateTimeClass The class of the object to create, defaults to DateTime
 	 *
 	 * @return mixed null, or an instance of $dateTimeClass
+     *
+     * @throws PropelException
 	 */
 	public static function newInstance($value, DateTimeZone $timeZone = null, $dateTimeClass = 'DateTime')
 	{
@@ -55,7 +57,7 @@ class PropelDateTime extends DateTime
 			return null;
 		}
 		try {
-			if (is_numeric($value)) { // if it's a unix timestamp
+            if (self::isTimestamp($value)) { // if it's a unix timestamp
 				$dateTimeObject = new $dateTimeClass('@' . $value, new DateTimeZone('UTC'));
 				// timezone must be explicitly specified and then changed
 				// because of a DateTime bug: http://bugs.php.net/bug.php?id=43003
@@ -71,9 +73,29 @@ class PropelDateTime extends DateTime
 		} catch (Exception $e) {
 			throw new PropelException('Error parsing date/time value: ' . var_export($value, true), $e);
 		}
+
 		return $dateTimeObject;
 	}
-
+    
+    public static function isTimestamp($value)
+    {
+        if (!is_numeric($value)) {
+            return false;
+        }
+        
+        $stamp = strtotime($value);
+        
+        if (false === $stamp) {
+            return true;
+        }
+        
+        $month = date('m', $value);
+        $day = date('d', $value);
+        $year = date('Y', $value);
+        
+        return checkdate($month, $day, $year);
+    }
+    
 	/**
 	 * PHP "magic" function called when object is serialized.
 	 * Sets an internal property with the date string and returns properties
